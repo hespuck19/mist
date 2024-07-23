@@ -427,42 +427,11 @@ class MaterialInformation:
             specific_heat_liquid.append(self.properties["specific_heat_liquid"].value) 
             print(f"{value}")
         
-        density = None
-        p = self.properties["density"]
-        if p.value_type == ValueTypes.SCALAR:
-                density = p.value
-        elif p.value_type == ValueTypes.LAURENT_POLYNOMIAL:
-                density = p.evaluate_laurent_polynomial(reference_temperature)
-        else:
-                print("Error: additiveFOAM requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes.")   
-
-        dynamic_viscosity = None
-        p = self.properties["dynamic_viscosity"]
-        if p.value_type == ValueTypes.SCALAR:
-                dynamic_viscosity = p.value
-        elif p.value_type == ValueTypes.LAURENT_POLYNOMIAL:
-                dynamic_viscosity = p.evaluate_laurent_polynomial(reference_temperature)
-        else:
-                print("Error: additiveFOAM requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes.") 
-
-        thermal_expansion = None
-        p = self.properties["thermal_expansion"]
-        if p.value_type == ValueTypes.SCALAR:
-                thermal_expansion = p.value
-        elif p.value_type == ValueTypes.LAURENT_POLYNOMIAL:
-                thermal_expansion = p.evaluate_laurent_polynomial(reference_temperature)
-        else:  
-               print("Error: additiveFOAM requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes.") 
-
-        latent_heat_fusion = None
-        p = self.properties["latent_heat_fusion"]
-        if p.value_type == ValueTypes.SCALAR:
-                latent_heat_fusion = p.value
-        elif p.value_type == ValueTypes.LAURENT_POLYNOMIAL:
-                latent_heat_fusion = p.evaluate_laurent_polynomial(reference_temperature)
-        else:  
-               print("Error: additiveFOAM requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes.")
-
+        density = self.get_property("density")
+        latent_heat_fusion = self.get_property("latent_heat_fusion")
+        dynamic_viscosity = self.get_property("dynamic_viscosity")
+        thermal_expansion = self.get_property("thermal_expansion")
+        
         with open(file, "w") as f:
             f.write(comment_block)
             f.write("solid\n{\n")
