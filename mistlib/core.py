@@ -431,7 +431,7 @@ class MaterialInformation:
         latent_heat_fusion = self.get_property("latent_heat_fusion")
         dynamic_viscosity = self.get_property("dynamic_viscosity")
         thermal_expansion = self.get_property("thermal_expansion")
-        
+
         with open(file, "w") as f:
             f.write(comment_block)
             f.write("solid\n{\n")
@@ -500,33 +500,9 @@ class MaterialInformation:
 
          # For autothesis we assume that all temperature-dependent material properties are evaluated at the solidus temperature
         reference_temperature = self.properties["solidus_eutectic_temperature"].value
-
-        thermal_conductivity = None
-        p = self.properties["thermal_conductivity_solid"]
-        if (p.value_type == ValueTypes.SCALAR):
-            thermal_conductivity = p.value
-        elif (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-             thermal_conductivity = p.evaluate_laurent_polynomial(reference_temperature)
-        else:
-            print("Error: autothesis requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes")
-
-        specific_heat = None
-        p = self.properties["specific_heat_solid"]
-        if (p.value_type == ValueTypes.SCALAR):
-            specific_heat = p.value
-        elif (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-             specific_heat = p.evaluate_laurent_polynomial(reference_temperature)
-        else:
-            print("Error: autothesis requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes")
-
-        density = None
-        p = self.properties["density"]
-        if (p.value_type == ValueTypes.SCALAR):
-            density = p.value
-        elif (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-             density = p.evaluate_laurent_polynomial(reference_temperature)
-        else:
-            print("Error: autothesis requires either SCALAR or LAURENT_POLYNOMIAL ValueTypes")
+        thermal_conductivity = self.get_property("thermal_conductivity_solid")
+        specific_heat = self.get_property("specific_heat_solid")
+        density = self.get_property("density")
 
         with open(file, 'w') as f:
               f.write("Constants\n")
