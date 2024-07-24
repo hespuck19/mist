@@ -358,6 +358,7 @@ class MaterialInformation:
             return
     
     def write_additivefoam_transportProp(self, file):
+        code_name = "additiveFOAM"
         comment_block = """/*---------------------------------------------------------------------------
      AdditiveFOAM template input file (compatible with 1.0, OpenFOAM 10)
 
@@ -428,10 +429,10 @@ class MaterialInformation:
             specific_heat_liquid.append(self.properties["specific_heat_liquid"].value) 
             print(f"{value}")
         
-        density = self.get_property("density")
-        latent_heat_fusion = self.get_property("latent_heat_fusion")
-        dynamic_viscosity = self.get_property("dynamic_viscosity")
-        thermal_expansion = self.get_property("thermal_expansion")
+        density = self.get_property("density", code_name, reference_temperature)
+        latent_heat_fusion = self.get_property("latent_heat_fusion", code_name, reference_temperature)
+        dynamic_viscosity = self.get_property("dynamic_viscosity", code_name, reference_temperature)
+        thermal_expansion = self.get_property("thermal_expansion", code_name, reference_temperature)
         
         with open(file, "w") as f:
             f.write(comment_block)
