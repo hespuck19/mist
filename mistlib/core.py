@@ -485,6 +485,7 @@ class MaterialInformation:
                 content += (f"\tCp\t\t ({self.properties['specific_heat_solid'].value} 0.0 0.0);\n")
             
             content += "}\n\n"
+            f.write(content)
             f.write(f"rho     [1 -3 0 0 0 0 0]    {density};\n"
         f"mu      [1 -1 -1  0 0 0 0]  {dynamic_viscosity};\n"
         f"beta    [0 0 0 -1 0 0 0]    {thermal_expansion};\n"
