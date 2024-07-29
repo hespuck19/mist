@@ -386,6 +386,9 @@ class MaterialInformation:
 """
         reference_temperature = self.properties["solidus_eutectic_temperature"].value
         p=(self.properties["thermal_conductivity_solid"].value_laurent_poly)
+        if self.properties["thermal_conductivity_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
+            if len(p) > 3:
+                raise ValueError("Error: More than 3 pairs are provided.")
         labeled_values = {}
         for idx, pair in enumerate(p, 1):
             label = f"thermal_cond_S{idx}" 
@@ -396,6 +399,9 @@ class MaterialInformation:
             thermal_cond_solid.append(value)
 
         p=(self.properties["thermal_conductivity_liquid"].value_laurent_poly)
+        if self.properties["thermal_conductivity_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
+            if len(p) > 3:
+                raise ValueError("Error: More than 3 pairs are provided.")
         first_values = [pair[0] for pair in p]
         labeled_values = {}
         for idx, pair in enumerate(p, 1):
@@ -407,6 +413,9 @@ class MaterialInformation:
             thermal_cond_liquid.append(value)
 
         p = (self.properties["specific_heat_solid"].value_laurent_poly)
+        if self.properties["specific_heat_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
+            if len(p) > 3:
+                raise ValueError("Error: More than 3 pairs are provided.")
         first_values = [pair[0] for pair in p]
         labeled_values = {}
         for idx, pair in enumerate(p, 1):
@@ -419,6 +428,8 @@ class MaterialInformation:
 
         p = (self.properties["specific_heat_liquid"].value_laurent_poly)
         if self.properties["specific_heat_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
+            if len(p) > 3:
+                raise ValueError("Error: More than 3 pairs are provided.")
             first_values = [pair[0] for pair in p]
             labeled_values = {}
             for idx, pair in enumerate(p, 1):
