@@ -1,6 +1,7 @@
 import json
 import pandoc
 import os
+import numpy as np
 from enum import Enum
 
 class ValueTypes(Enum):
@@ -366,6 +367,63 @@ class MaterialInformation:
     
             return
     
+
+    import numpy as np
+
+    def process_properties(self):
+        # Properties to process
+        properties = ["thermal_conductivity_solid", "thermal_conductivity_liquid", "specific_heat_liquid", "specific_heat_solid"]
+
+        # Initialize dictionaries to store the coefficients
+        thermal_cond_solid = {}
+        thermal_cond_liquid = {}
+        specific_heat_liquid = {}
+        specific_heat_solid = {}
+
+        def ensure_three_values(array):
+            result = np.zeros(3)
+            result[:min(len(array), 3)] = array[:3]
+            return result
+
+        # Iterate over each property
+        for prop in properties:
+            # Retrieve terms for the current property
+            terms = self.properties[prop].value_laurent_poly
+            
+            # Convert terms directly into NumPy arrays
+            terms = np.array(terms)  # Ensure terms is an array-like structure
+            
+            # Separate exponents and coefficients
+            coefficients = terms[:, 0]  # Assuming first column is coefficients
+            exponents = terms[:, 1]     # Assuming second column is exponents
+
+            # Ensure arrays have exactly three values
+            coefficients = ensure_three_values(coefficients)
+            exponents = ensure_three_values(exponents)
+
+            # Create a dictionary mapping exponents to coefficients
+            exp_to_coeff = dict(zip(exponents, coefficients))
+
+            # Store in the appropriate dictionary
+            if prop == "thermal_conductivity_solid":
+                thermal_cond_solid = exp_to_coeff
+            elif prop == "thermal_conductivity_liquid":
+                thermal_cond_liquid = exp_to_coeff
+            elif prop == "specific_heat_liquid":
+                specific_heat_liquid = exp_to_coeff
+            elif prop == "specific_heat_solid":
+                specific_heat_solid = exp_to_coeff
+
+        # Convert dictionaries to NumPy arrays if needed
+        thermal_cond_solid_array = np.array(list(thermal_cond_solid.items()))
+        thermal_cond_liquid_array = np.array(list(thermal_cond_liquid.items()))
+        specific_heat_liquid_array = np.array(list(specific_heat_liquid.items()))
+        specific_heat_solid_array = np.array(list(specific_heat_solid.items()))
+        print(thermal_cond_liquid_array)
+
+        # Return the arrays
+        return thermal_cond_liquid_array, thermal_cond_solid_array, specific_heat_liquid_array, specific_heat_solid_array
+
     def write_additivefoam_transportProp(self, file):
         code_name = "AdditiveFOAM"
         comment_block = """/*---------------------------------------------------------------------------
@@ -383,67 +441,69 @@ class MaterialInformation:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-"""
+    """
+        
         reference_temperature = self.properties["solidus_eutectic_temperature"].value
-        p=(self.properties["thermal_conductivity_solid"].value_laurent_poly)
-        if self.properties["thermal_conductivity_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
-            if len(p) > 3:
-                raise ValueError("Error: More than 3 pairs are provided.")
-        labeled_values = {}
-        for idx, pair in enumerate(p, 1):
-            label = f"thermal_cond_S{idx}" 
-            first_value = pair[0]
-            labeled_values[label] = first_value
-        thermal_cond_solid = []
-        for label, value in labeled_values.items():
-            thermal_cond_solid.append(value)
+        thermal_cond_liquid = self.process_properties(self)
+        # p=(self.properties["thermal_conductivity_solid"].value_laurent_poly)
+        # if self.properties["thermal_conductivity_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
+        #     if len(p) > 3:
+        #         raise ValueError("Error: More than 3 pairs are provided.")
+        # labeled_values = {}
+        # for idx, pair in enumerate(p, 1):
+        #     label = f"thermal_cond_S{idx}" 
+        #     first_value = pair[0]
+        #     labeled_values[label] = first_value
+        # thermal_cond_solid = []
+        # for label, value in labeled_values.items():
+        #     thermal_cond_solid.append(value)
 
-        p=(self.properties["thermal_conductivity_liquid"].value_laurent_poly)
-        if self.properties["thermal_conductivity_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
-            if len(p) > 3:
-                raise ValueError("Error: More than 3 pairs are provided.")
-        first_values = [pair[0] for pair in p]
-        labeled_values = {}
-        for idx, pair in enumerate(p, 1):
-            label = f"thermal_cond_L{idx}" 
-            first_value = pair[0]
-            labeled_values[label] = first_value
-        thermal_cond_liquid = []
-        for label, value in labeled_values.items():
-            thermal_cond_liquid.append(value)
+        # p=(self.properties["thermal_conductivity_liquid"].value_laurent_poly)
+        # if self.properties["thermal_conductivity_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
+        #     if len(p) > 3:
+        #         raise ValueError("Error: More than 3 pairs are provided.")
+        # first_values = [pair[0] for pair in p]
+        # labeled_values = {}
+        # for idx, pair in enumerate(p, 1):
+        #     label = f"thermal_cond_L{idx}" 
+        #     first_value = pair[0]
+        #     labeled_values[label] = first_value
+        # thermal_cond_liquid = []
+        # for label, value in labeled_values.items():
+        #     thermal_cond_liquid.append(value)
 
-        p = (self.properties["specific_heat_solid"].value_laurent_poly)
-        if self.properties["specific_heat_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
-            if len(p) > 3:
-                raise ValueError("Error: More than 3 pairs are provided.")
-        first_values = [pair[0] for pair in p]
-        labeled_values = {}
-        for idx, pair in enumerate(p, 1):
-            label = f"specific_heat_S{idx}" 
-            first_value = pair[0]
-            labeled_values[label] = first_value
-        specific_heat_solid = []
-        for label, value in labeled_values.items():
-            specific_heat_solid.append(value)
+        # p = (self.properties["specific_heat_solid"].value_laurent_poly)
+        # if self.properties["specific_heat_solid"] == ValueTypes.LAURENT_POLYNOMIAL:
+        #     if len(p) > 3:
+        #         raise ValueError("Error: More than 3 pairs are provided.")
+        # first_values = [pair[0] for pair in p]
+        # labeled_values = {}
+        # for idx, pair in enumerate(p, 1):
+        #     label = f"specific_heat_S{idx}" 
+        #     first_value = pair[0]
+        #     labeled_values[label] = first_value
+        # specific_heat_solid = []
+        # for label, value in labeled_values.items():
+        #     specific_heat_solid.append(value)
 
-        p = (self.properties["specific_heat_liquid"].value_laurent_poly)
-        if self.properties["specific_heat_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
-            if len(p) > 3:
-                raise ValueError("Error: More than 3 pairs are provided.")
-            first_values = [pair[0] for pair in p]
-            labeled_values = {}
-            for idx, pair in enumerate(p, 1):
-                label = f"specific_heat_L{idx}" 
-                first_value = pair[0]
-                labeled_values[label] = first_value
-            specific_heat_liquid= []
-            for label, value in labeled_values.items():
-                specific_heat_liquid.append(value)
+        # p = (self.properties["specific_heat_liquid"].value_laurent_poly)
+        # if self.properties["specific_heat_liquid"] == ValueTypes.LAURENT_POLYNOMIAL:
+        #     if len(p) > 3:
+        #         raise ValueError("Error: More than 3 pairs are provided.")
+        #     first_values = [pair[0] for pair in p]
+        #     labeled_values = {}
+        #     for idx, pair in enumerate(p, 1):
+        #         label = f"specific_heat_L{idx}" 
+        #         first_value = pair[0]
+        #         labeled_values[label] = first_value
+        #     specific_heat_liquid= []
+        #     for label, value in labeled_values.items():
+        #         specific_heat_liquid.append(value)
 
-        else:
-            p = self.properties["specific_heat_liquid"].value
-            specific_heat_liquid = []
-            specific_heat_liquid.append(self.properties["specific_heat_liquid"].value) 
+        # else:
+        #     p = self.properties["specific_heat_liquid"].value
+        #     specific_heat_liquid = []
+        #     specific_heat_liquid.append(self.properties["specific_heat_liquid"].value) 
             
 
         density = self.get_property("density", code_name, reference_temperature)
@@ -457,13 +517,13 @@ class MaterialInformation:
             
             p = self.properties["thermal_conductivity_solid"]
             if (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-                content += (f"\tkappa\t ({thermal_cond_solid[0]} {thermal_cond_solid[1]} 0.0);\n")
+                content += (f"\tkappa\t ({thermal_cond_solid_array};\n")
             else:
                 content += (f"\tkappa\t ({self.properties['thermal_conductivity_solid'].value} 0.0 0.0);\n")
 
             p = self.properties["specific_heat_solid"]
             if (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-                content += (f"\tCp\t\t ({specific_heat_solid[0]} {specific_heat_solid[1]} 0.0);\n")
+                content += (f"\tCp\t\t ({specific_heat_solid});\n")
             else:
                 content += (f"\tCp\t\t ({self.properties['specific_heat_solid'].value} 0.0 0.0);\n")
         
@@ -471,7 +531,7 @@ class MaterialInformation:
 
             p = self.properties["thermal_conductivity_liquid"]
             if (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-                content += (f"\tkappa\t ({thermal_cond_liquid[0]} {thermal_cond_liquid[1]} 0.0);\n")
+                content += (f"\tkappa\t ({thermal_cond_liquid};\n")
             else:
                 content +=  (f"\tkappa\t ({self.properties['thermal_conductivity_liquid'].value});\n")
             
@@ -485,16 +545,16 @@ class MaterialInformation:
             
             p = self.properties["thermal_conductivity_solid"]
             if (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-                content += (f"\tkappa\t ({thermal_cond_solid[0]} {thermal_cond_solid[1]} 0.0);\n")
+                content += (f"\tkappa\t ({thermal_cond_solid};\n")
             else:
-                 content +=(f"\tkappa\t ({self.properties['thermal_conductivity_solid'].value} 0.0 0.0);\n")
+                content += (f"\tkappa\t ({self.properties['thermal_conductivity_solid'].value} 0.0 0.0);\n")
 
             p = self.properties["specific_heat_solid"]
             if (p.value_type == ValueTypes.LAURENT_POLYNOMIAL):
-                content += (f"\tCp\t\t ({specific_heat_solid[0]} {specific_heat_solid[1]} 0.0);\n")
+                content += (f"\tCp\t\t ({specific_heat_solid});\n")
             else:
                 content += (f"\tCp\t\t ({self.properties['specific_heat_solid'].value} 0.0 0.0);\n")
-            
+
             content += "}\n\n"
             f.write(content)
             f.write(f"rho     [1 -3 0 0 0 0 0]    {density};\n"
@@ -556,7 +616,7 @@ class MaterialInformation:
     def validate_completeness(self):
         # Check if the information is complete by a user-specified standard
         # TODO
-        return
+        return()
     
     
         
